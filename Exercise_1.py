@@ -1,5 +1,6 @@
 import numpy as np
 import operator
+from collections import Counter
 
 
 # TODO
@@ -87,20 +88,21 @@ def exercise_4(filename):
     content = read_file(filename)
     letters = {}
     counter = 0
-    double_letters = ""
+    old_letter = ""
 
     for _, letter in enumerate(content):
-        if double_letters != "":
-            double_letters += letter
-            cardinality = letters.get(double_letters, 0)
-            letters.update({double_letters: cardinality + 1})
+        if old_letter != "":
+            dictionary_item = letters.get(old_letter, {})
+            cardinality = dictionary_item.get(letter, 0)
+            cardinality_total = dictionary_item.get("total", 0)
+
+            dictionary_item.update({letter: cardinality + 1})
+            dictionary_item.update({"total": cardinality_total + 1})
+            letters.update({old_letter: dictionary_item})
             counter += 1
-        double_letters = letter
+        old_letter = letter
 
-    for letter in letters:
-        letters.update({letter: letters.get(letter) / counter})
-
-    return letters
+    return letters, counter
 
 
 # TODO
@@ -134,13 +136,15 @@ def main():
 
     print("\nExercise 4:")
     for filename in files:
-        frequency_first = exercise_4(filename)
+        frequency_first, counter = exercise_4(filename)
         print("\tFile =", filename, "\tLetters:", frequency_first)
 
         print("\n\tSelected top used - starts with `" + exercise_4_first_letter + "` or `" + exercise_4_second_letter + "`")
-        for (key, value) in frequency_first.items():
-            if key.startswith(exercise_4_first_letter) or key.startswith(exercise_4_second_letter):
-                print("\t\t", key, value)
+        results = {exercise_4_first_letter: frequency_first.get(exercise_4_first_letter, {}), exercise_4_second_letter: frequency_first.get(exercise_4_second_letter, {})}
+        for dictionary in results:
+            for (key, value) in results.get(dictionary).items():
+                if key != "total":
+                    print("\t\t", dictionary + key, value / counter)
         print("\n\t------------------------------------------\n")
 
     # Exercise 5
