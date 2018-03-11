@@ -3,7 +3,7 @@ import operator
 import random
 
 
-# TODO
+# Exercise 1 - Generate words and calculate average length.
 def exercise_1(size):
     alphabet = list("qazxswedcvfrtgbnhyujmkilop ")
     total_length = 0
@@ -13,7 +13,7 @@ def exercise_1(size):
     return total_length / size
 
 
-# TODO
+# Single word - Example 1 generator.
 def exercise_1_single_word(alphabet):
     word = ""
     while True:
@@ -25,13 +25,13 @@ def exercise_1_single_word(alphabet):
     return word
 
 
-# TODO
+# Read file's content
 def read_file(name):
     file = open(name, 'r')
     return file.read()
 
 
-# TODO
+# Calculate file details, return average characters length in file.
 def file_parameters(filename):
     content = read_file(filename)
     total_length = 0
@@ -43,7 +43,7 @@ def file_parameters(filename):
     return total_length / len(words)
 
 
-# TODO
+# Exercise 2 - Calculate frequency of letters in text.
 def exercise_2(filename):
     content = read_file(filename)
     letters = {}
@@ -60,7 +60,7 @@ def exercise_2(filename):
     return letters
 
 
-# TODO
+# Exercise 3 - Calculate first row average length.
 def exercise_3(size, frequency):
     keys = list(frequency.keys())
     probability_list = list(frequency.values())
@@ -72,7 +72,7 @@ def exercise_3(size, frequency):
     return total_length / size
 
 
-# TODO
+# Words generator - Exercise 3.
 def exercise_3_word_generator(alphabet, probability):
     word = ""
     while True:
@@ -84,7 +84,7 @@ def exercise_3_word_generator(alphabet, probability):
     return word
 
 
-# TODO
+# Exercise 4 - Probability of letters in text.
 def exercise_4(filename):
     content = read_file(filename)
     letters = {}
@@ -106,7 +106,7 @@ def exercise_4(filename):
     return letters, counter
 
 
-# TODO
+# Extra function to update dictionary.
 def update_dictionary(dictionary, letters, index):
     single = dictionary.get(letters[index], {})
     cardinality_total = single.get("total", 0)
@@ -116,7 +116,7 @@ def update_dictionary(dictionary, letters, index):
     return dictionary
 
 
-# TODO
+# Modify dictionaries - any rows.
 def modify_dictionaries(dictionary, letters_list):
     list_index = len(letters_list)
     rows = list_index
@@ -133,7 +133,7 @@ def modify_dictionaries(dictionary, letters_list):
     return dictionary
 
 
-# TODO
+# Exercise 5 - Analyze files, calculate file's statistics.
 def exercise_5_analyze(filename, row):
     content = read_file(filename)
     # content = content[:1_000_000]
@@ -153,7 +153,7 @@ def exercise_5_analyze(filename, row):
     return dictionary
 
 
-# TODO
+# Roulette wheel
 def roulette_wheel(letters, probability):
     value = random.random()
     probability_sum = 0.0
@@ -168,7 +168,7 @@ def roulette_wheel(letters, probability):
     return letters[selected]
 
 
-# TODO
+# Exercise 5 - generator with use roulette wheel and statistics from file.
 def exercise_5_generator(dictionary, row, length):
     result = "probability"
     letters = list(result)
@@ -204,7 +204,7 @@ def exercise_5_generator(dictionary, row, length):
     return result
 
 
-# TODO
+# Main function
 def main():
     # File details
     print("File details:")
@@ -251,7 +251,6 @@ def main():
     statistics = exercise_5_analyze(filename, 6)
     for row in [1, 3, 5]:
         content = exercise_5_generator(statistics, row, 10000)
-
         last_char = ""
         words = 0
         for char in content:
