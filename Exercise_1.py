@@ -1,6 +1,6 @@
 import numpy as np
 import operator
-from collections import Counter
+import random
 
 
 # TODO
@@ -71,6 +71,7 @@ def exercise_3(size, frequency):
 
     return total_length / size
 
+
 # TODO
 def exercise_3_word_generator(alphabet, probability):
     word = ""
@@ -106,11 +107,108 @@ def exercise_4(filename):
 
 
 # TODO
+def update_dictionary(dictionary, letters, index):
+    single = dictionary.get(letters[index], {})
+    cardinality_total = single.get("total", 0)
+    single.update({"total": cardinality_total + 1})
+    dictionary.update({letters[index]: single})
+
+    return dictionary
+
+
+# TODO
+def modify_dictionaries(dictionary, letters_list):
+    list_index = len(letters_list)
+    rows = list_index
+
+    for i in range(list_index):
+        rows -= 1
+        selected_dictionary = dictionary
+
+        for j in range(rows):
+            selected_dictionary = selected_dictionary.get(letters_list[i + j], {})
+
+        update_dictionary(selected_dictionary, letters_list, list_index - 1)
+
+    return dictionary
+
+
+# TODO
+def exercise_5_analyze(filename, row):
+    content = read_file(filename)
+    # content = content[:1_000_000]
+    dictionary = {}
+    counter = 0
+    letters = []
+
+    for _, letter in enumerate(content):
+        letters.append(letter)
+        if len(letters) > row:
+            del(letters[0])
+
+        dictionary = modify_dictionaries(dictionary, letters)
+        counter += 1
+
+    dictionary.update({"total": counter})
+    return dictionary
+
+
+# TODO
+def roulette_wheel(letters, probability):
+    value = random.random()
+    probability_sum = 0.0
+    selected = 0
+
+    for ind, val in enumerate(probability):
+        probability_sum += val
+        if probability_sum >= value:
+            selected = ind
+            break
+
+    return letters[selected]
+
+
+# TODO
+def exercise_5_generator(dictionary, row, length):
+    result = "probability"
+    letters = list(result)
+    for _ in range(len(letters) - row):
+        del(letters[0])
+
+    for i in range(length):
+        selected_dictionary = dictionary
+
+        for ind, value in enumerate(letters):
+            selected_dictionary = selected_dictionary.get(value, {})
+
+        total = selected_dictionary.get("total")
+        letters_to_random = list()
+        probability_to_random = list()
+
+        for (key, value) in selected_dictionary.items():
+            if key != "total":
+                letters_to_random.append(key)
+                probability_to_random.append(value.get("total") / total)
+
+        if probability_to_random:
+            char = roulette_wheel(letters_to_random, probability_to_random)
+        else:
+            char = np.random.choice(list("qazxswedcvfrtgbnhyujmkilop "))
+
+        result += char
+
+        letters.append(char)
+        if len(letters) > row:
+            del(letters[0])
+
+    return result
+
+
+# TODO
 def main():
     # File details
     print("File details:")
-    # files = ["norm_hamlet.txt", "norm_romeo_and_juliet.txt", "norm_wiki_sample.txt"]
-    files = ["norm_hamlet2.txt"] # TODO delete
+    files = ["norm_hamlet.txt", "norm_romeo_and_juliet.txt", "norm_wiki_sample.txt"]
     for filename in files:
         print("\tFile =", filename, "\tAverage length =", file_parameters(filename), "characters")
 
@@ -129,7 +227,6 @@ def main():
     print("\nExercise 3:\n\tWords = ", words_size, "\tAverage length =", exercise_3(words_size, frequency), "characters")
 
     # Exercise 4
-    frequency_first = {}
     sorted_x = sorted(frequency.items(), key=operator.itemgetter(1))
     exercise_4_first_letter = sorted_x.pop()[0]
     exercise_4_second_letter = sorted_x.pop()[0]
@@ -148,6 +245,20 @@ def main():
         print("\n\t------------------------------------------\n")
 
     # Exercise 5
+    print("\nExercise 5:")
+    filename = files[len(files) - 1]
+    print("Analyze file", filename)
+    statistics = exercise_5_analyze(filename, 6)
+    for row in [1, 3, 5]:
+        content = exercise_5_generator(statistics, row, 10000)
+
+        last_char = ""
+        words = 0
+        for char in content:
+            if char == " " and last_char != " ":
+                words += 1
+
+        print("Row =", row, "\tAverage length:", len(content) / words)
 
 
 if __name__ == "__main__":
