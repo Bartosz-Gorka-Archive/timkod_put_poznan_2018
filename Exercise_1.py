@@ -106,29 +106,15 @@ def exercise_4(filename):
     return letters, counter
 
 
-# Extra function to update dictionary.
-def update_dictionary(dictionary, letters, index):
-    single = dictionary.get(letters[index], {})
-    cardinality_total = single.get("total", 0)
-    single.update({"total": cardinality_total + 1})
-    dictionary.update({letters[index]: single})
+# Modify dictionaries.
+def modify_dictionaries(dictionary, top_key, key):
+    selected = dictionary.get(top_key, {})
+    value = selected.get(key, 0)
+    total = selected.get("total", 0)
 
-    return dictionary
-
-
-# Modify dictionaries - any rows.
-def modify_dictionaries(dictionary, letters_list):
-    list_index = len(letters_list)
-    rows = list_index
-
-    for i in range(list_index):
-        rows -= 1
-        selected_dictionary = dictionary
-
-        for j in range(rows):
-            selected_dictionary = selected_dictionary.get(letters_list[i + j], {})
-
-        update_dictionary(selected_dictionary, letters_list, list_index - 1)
+    selected.update({key: value + 1})
+    selected.update({"total": total + 1})
+    dictionary.update({top_key: selected})
 
     return dictionary
 
@@ -136,20 +122,15 @@ def modify_dictionaries(dictionary, letters_list):
 # Exercise 5 - Analyze files, calculate file's statistics.
 def exercise_5_analyze(filename, row):
     content = read_file(filename)
-    # content = content[:1_000_000]
     dictionary = {}
-    counter = 0
     letters = []
 
     for _, letter in enumerate(content):
-        letters.append(letter)
         if len(letters) > row:
             del(letters[0])
+            dictionary = modify_dictionaries(dictionary, ''.join(letters), letter)
+        letters.append(letter)
 
-        dictionary = modify_dictionaries(dictionary, letters)
-        counter += 1
-
-    dictionary.update({"total": counter})
     return dictionary
 
 
@@ -176,19 +157,16 @@ def exercise_5_generator(dictionary, row, length):
         del(letters[0])
 
     for i in range(length):
-        selected_dictionary = dictionary
-
-        for ind, value in enumerate(letters):
-            selected_dictionary = selected_dictionary.get(value, {})
-
-        total = selected_dictionary.get("total")
         letters_to_random = list()
         probability_to_random = list()
 
-        for (key, value) in selected_dictionary.items():
+        selected = dictionary.get(''.join(letters))
+        total = selected.get("total", 1)
+
+        for (key, value) in selected.items():
             if key != "total":
                 letters_to_random.append(key)
-                probability_to_random.append(value.get("total") / total)
+                probability_to_random.append(value / total)
 
         if probability_to_random:
             char = roulette_wheel(letters_to_random, probability_to_random)
@@ -247,17 +225,22 @@ def main():
     # Exercise 5
     print("\nExercise 5:")
     filename = files[len(files) - 1]
-    print("Analyze file", filename)
-    statistics = exercise_5_analyze(filename, 6)
-    for row in [1, 3, 5]:
-        content = exercise_5_generator(statistics, row, 10000)
+    for i in [1, 3, 5]:
+        print("Analyze file", filename)
+        statistics = exercise_5_analyze(filename, i)
+        print("Generate content")
+        content = exercise_5_generator(statistics, i, 2_000_000)
         last_char = ""
         words = 0
+        total_length = 0
         for char in content:
+            if char != " ":
+                total_length += 1
             if char == " " and last_char != " ":
                 words += 1
+            last_char = char
 
-        print("Row =", row, "\tAverage length:", len(content) / words)
+        print("Row =", i, "\tAverage length:", total_length / words)
 
 
 if __name__ == "__main__":
