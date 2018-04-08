@@ -55,7 +55,7 @@ def analyze_content(content):
     return letters
 
 
-def analyze_characters(content, row):
+def analyze_characters(content, row, separator=''):
     # Results - dictionary with letters
     letters = {}
 
@@ -69,7 +69,7 @@ def analyze_characters(content, row):
     for char in content:
         if len(last_characters) == row:
             # Fetch dictionary
-            selected_dictionary = letters.get(''.join(last_characters), {})
+            selected_dictionary = letters.get(separator.join(last_characters), {})
 
             # Update total counter
             total = selected_dictionary.get('--TOTAL--', 0)
@@ -80,7 +80,7 @@ def analyze_characters(content, row):
             selected_dictionary.update({char: cardinality + 1})
 
             # Update selected dictionary
-            letters.update({''.join(last_characters): selected_dictionary})
+            letters.update({separator.join(last_characters): selected_dictionary})
 
             # Update counter
             counter += 1
@@ -97,80 +97,97 @@ def analyze_characters(content, row):
 
 
 def cardinality_to_probability(dictionary, counter):
-    # Result dictionary to speed up actions - add values to new dictionary
-    result = {}
-
-    # Separator
-    separator = ''
+    key_dictionary = {}
 
     # Loop to change cardinality to probability
     for key, value_dict in dictionary.items():
         # Fetch cardinality from special key
         cardinality = value_dict.pop('--TOTAL--')
 
-        # Add single key to result's dictionary as probability value
-        result.update({key: cardinality / counter})
-
         # Loop to iterate - values in dictionary
         for value_key, value in value_dict.items():
             # Set value
-            result[key + separator + value_key] = value / cardinality
+            value_dict.update({value_key: value / cardinality})
+
+        # Probability of key
+        key_dictionary[key] = cardinality / counter
+
+        # Update dictionary
+        dictionary.update({key: value_dict})
 
     # Return updated dictionary
-    return result
+    return dictionary, key_dictionary
+
+
+def conditional_entropy(dictionary, keys):
+    # Entropy
+    entropy_value = 0.0
+
+    # Sum over keys - get all values
+    for key, probability_x in keys.items():
+        for value in dictionary.get(key).values():
+            entropy_value += probability_x * value * math.log(value, 2)
+
+    # Return calculated entropy
+    return -entropy_value
 
 
 def main():
-    debug = True
-
-    file_name = 'short_sample.txt'
-    content = read_file(file_name)
-
-    value, counter = analyze_characters(content, 1)
-    value = cardinality_to_probability(value, counter)
-    # for key, value in value.items():
-    #     print(key, value)
-
     #
     # Exercise 1 - Random, all letters with probability 1/37
     #
 
-    # letters = list('qwertyuiopasdfghjklzxcvbnm0123456789 ')
-    # probability = [1/37 for _ in letters]
-    # size = 10_000
-    # text = exercise_1_generator(size=size, alphabet=letters, probability=probability)
-    # letters_dictionary = analyze_content(text)
-    # entropy_result = entropy(letters_dictionary)
-    #
-    # if debug:
-    #     print('Exercise 1 - Raw, random text')
-    #     print('\tEntropy =>', entropy_result)
+    letters = list('qwertyuiopasdfghjklzxcvbnm0123456789 ')
+    probability = [1/37 for _ in letters]
+    size = 10_000
+    text = exercise_1_generator(size=size, alphabet=letters, probability=probability)
+    letters_dictionary = analyze_content(text)
+    entropy_result = entropy(letters_dictionary)
+
+    print('Exercise 1 - Raw, random text')
+    print('\tEntropy =>', entropy_result)
 
     #
     # Exercise 1 - Analyze content from sample Wiki
     #
 
-    # size = 10_000
-    # letters_dictionary = analyze_content(content)
-    # text = exercise_1_generator(size=size, alphabet=list(letters_dictionary.keys()), probability=list(letters_dictionary.values()))
-    # letters_dictionary = analyze_content(text)
-    # entropy_result = entropy(letters_dictionary)
-    #
-    # if debug:
-    #     print('Exercise 1 - Based on text')
-    #     print('\tEntropy =>', entropy_result)
+    file_name = '../Exercise_1/norm_wiki_sample.txt'
+    content = read_file(file_name)
+    size = 10_000
+    letters_dictionary = analyze_content(content)
+    text = exercise_1_generator(size=size, alphabet=list(letters_dictionary.keys()), probability=list(letters_dictionary.values()))
+    letters_dictionary = analyze_content(text)
+    entropy_result = entropy(letters_dictionary)
+
+    print('Exercise 1 - Based on text')
+    print('\tEntropy =>', entropy_result)
 
     #
     # Exercise 2
     #
 
+    files = ['norm_wiki_en.txt', 'norm_wiki_la.txt', 'sample0.txt', 'sample1.txt', 'sample2.txt', 'sample3.txt', 'sample4.txt', 'sample5.txt']
+    rows = [1, 2, 3, 4, 5]
+
+    for file_name in files:
+        print('File ' + str(file_name))
+        content_char = read_file(file_name)
+        content_words = content_char.split()
+
+        print('\tContent [characters] =>', entropy(analyze_content(content_char)))
+        print('\tContent [words] =>', entropy(analyze_content(content_words)))
+
+        for row in rows:
+            words, counter = analyze_characters(content_char, row, separator='')
+            dictionary, keys = cardinality_to_probability(words, counter)
+            print('\t- chars @ ' + str(row) + ' =>', conditional_entropy(dictionary, keys))
+
+            words, counter = analyze_characters(content_words, row, separator=' ')
+            dictionary, keys = cardinality_to_probability(words, counter)
+            print('\t- words @ ' + str(row) + ' =>', conditional_entropy(dictionary, keys))
+
+        print('-------------------')
+
 
 if __name__ == '__main__':
     main()
-
-    # TODO list
-    # * Analyze entropy for single letter in text
-    # * Analyze entropy for word in text
-    # * Conditional entropy for letters - generic function with row as parameter
-    # * Conditional entropy for word - generic function with row as parameter
-    # * Loop to make ^ calculations for all files
