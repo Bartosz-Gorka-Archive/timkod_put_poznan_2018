@@ -62,6 +62,18 @@ def encode(code_dict, text):
     return encoded
 
 
+# Decode text
+def decode(encoded_bits, code_dict, length):
+    decoded = ''
+    total_length = encoded_bits.length()
+
+    for index in range(int(total_length / length)):
+        code = (encoded_bits[index * length: (index + 1) * length]).to01()
+        decoded += code_dict.get(code, '')
+
+    return decoded
+
+
 # Save encoded details to file
 def save(code_dict, encoded_content, directory):
     if not os.path.exists(directory):
