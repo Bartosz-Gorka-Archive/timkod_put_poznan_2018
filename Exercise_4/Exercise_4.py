@@ -49,3 +49,14 @@ def int_to_bits(length, value):
     for bit in bits_array:
         bits.append(bit)
     return bits
+
+
+# Encode text
+def encode(code_dict, text):
+    encoded = bitarray()
+
+    for letter in text:
+        for bit in code_dict.get(letter):
+            encoded.append(bit)
+
+    return encoded
