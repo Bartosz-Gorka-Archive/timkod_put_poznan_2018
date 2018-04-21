@@ -108,3 +108,48 @@ def load(directory):
             code_dictionary.update({base.to01(): key})
 
     return encoded_content, code_length, code_dictionary
+
+
+# Calculate size
+def calculate_sizes(directory, original):
+    encoded_size = os.stat(directory + 'encoded_result').st_size
+    key_size = os.stat(directory + 'key').st_size
+    original_size = os.stat(original).st_size
+    return encoded_size, key_size, original_size
+
+
+# Main function
+def main():
+    directory_name = 'encoded/'
+    file_name = 'norm_wiki_sample.txt'
+
+    content = read_file(file_name=file_name)
+    letters_dictionary, counter = analyze_content(content)
+    code_dict, code_length = create(letters_dictionary)
+    encoded = encode(code_dict, content)
+    save(code_dict, encoded, directory_name)
+    encoded_content, loaded_code_length, loaded_code_dictionary = load(directory_name)
+    decoded = decode(encoded_content, loaded_code_dictionary, loaded_code_length)
+    en_size, k_size, o_size = calculate_sizes(directory_name, file_name)
+
+    print('Original file => ' + file_name)
+    print('Size          => ' + str(o_size) + ' [bytes]')
+
+    print('Encoded size:')
+    print('\tEncoded   => ' + str(en_size) + ' [bytes]')
+    print('\tKey       => ' + str(k_size) + ' [bytes]')
+    print('\tSUM       => ' + str(k_size + en_size) + ' [bytes]')
+
+    print('Compare files')
+    if decoded == content:
+        print('\tEquality correct')
+    else:
+        print('\tContent =/= Decoded(Encoded(Content))')
+
+        print(content)
+        print('\n\n--------\n\n')
+        print(decoded)
+
+
+if __name__ == '__main__':
+    main()
