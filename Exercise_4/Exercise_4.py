@@ -27,3 +27,25 @@ def to_probability(dictionary, counter):
     for letter in dictionary:
         dictionary.update({letter: dictionary.get(letter) / counter})
     return dictionary
+
+
+# Create code
+def create(dictionary):
+    code_dictionary = {}
+    unique_characters = len(dictionary.keys())
+    length = math.ceil(math.log(unique_characters + 1, 2))
+
+    for index, key in enumerate(dictionary.keys()):
+        base = int_to_bits(length, index)
+        code_dictionary.update({key: base})
+    return code_dictionary, length
+
+
+# Convert integer value to bit array
+def int_to_bits(length, value):
+    bits_array = [1 if digit == '1' else 0 for digit in bin(value)[2:]]
+    bits = bitarray(length - len(bits_array))
+    bits.setall(0)
+    for bit in bits_array:
+        bits.append(bit)
+    return bits
