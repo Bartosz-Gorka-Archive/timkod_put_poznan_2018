@@ -60,3 +60,39 @@ def encode(code_dict, text):
             encoded.append(bit)
 
     return encoded
+
+
+# Save encoded details to file
+def save(code_dict, encoded_content, directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    # Normalize to 8-bits byte
+    content = encoded_content.copy()
+    for _ in range(content.length() % 8):
+        content.append(1)
+
+    with open(directory + 'encoded_result', 'wb') as content_file:
+        content.tofile(content_file)
+    with open(directory + 'key', 'w') as key_file:
+        for key in code_dict.keys():
+            key_file.write(key)
+
+
+# Load
+def load(directory):
+    encoded_content = bitarray()
+    code_dictionary = {}
+
+    with open(directory + 'encoded_result', 'rb') as content_file:
+        encoded_content.fromfile(content_file)
+
+    with open(directory + 'key', 'r') as key_file:
+        content = key_file.read()
+        code_length = math.ceil(math.log(len(content) + 1, 2))
+
+        for index, key in enumerate(content):
+            base = int_to_bits(code_length, index)
+            code_dictionary.update({base.to01(): key})
+
+    return encoded_content, code_length, code_dictionary
