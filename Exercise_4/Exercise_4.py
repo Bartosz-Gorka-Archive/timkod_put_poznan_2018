@@ -132,17 +132,20 @@ def main():
     decoded = decode(encoded_content, loaded_code_dictionary, loaded_code_length)
     en_size, k_size, o_size = calculate_sizes(directory_name, file_name)
 
+    sum_size = k_size + en_size
     print('Original file => ' + file_name)
     print('Size          => ' + str(o_size) + ' [bytes]')
 
     print('Encoded size:')
     print('\tEncoded   => ' + str(en_size) + ' [bytes]')
     print('\tKey       => ' + str(k_size) + ' [bytes]')
-    print('\tSUM       => ' + str(k_size + en_size) + ' [bytes]')
+    print('\tSUM       => ' + str(sum_size) + ' [bytes]')
 
     print('Compare files')
     if decoded == content:
-        print('\tEquality correct')
+        print('\tEquality correct ✓')
+        print('\tCompression Ratio => ' + str(o_size / sum_size))
+        print('\tSpace savings     => ' + str(1 - sum_size / o_size))
     else:
         print('\tContent =/= Decoded(Encoded(Content))')
 
