@@ -20,3 +20,10 @@ def analyze_content(content):
         counter += 1
 
     return letters, counter
+
+
+# Cardinality to probability change
+def to_probability(dictionary, counter):
+    for letter in dictionary:
+        dictionary.update({letter: dictionary.get(letter) / counter})
+    return dictionary
