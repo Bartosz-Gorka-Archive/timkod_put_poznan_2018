@@ -76,6 +76,8 @@ def code_helper(root, current_code, codes):
 
     # Required assign character to node (only leaf has)
     if root.char:
+        if int(current_code) == 0:
+            current_code += '1'
         codes[root.char] = current_code
         return
 
@@ -193,7 +195,7 @@ def calculate_sizes(directory, original):
 # Main function
 def main():
     directory = 'encoded/'
-    file_name = '../Exercise_3/short_sample.txt'
+    file_name = 'norm_wiki_sample.txt'
 
     content = read_file(file_name)
     letters_dictionary, counter = analyze_content(content)
