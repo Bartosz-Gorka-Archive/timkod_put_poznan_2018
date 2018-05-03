@@ -182,6 +182,14 @@ def decode(encoded_bits, code_dict):
     return decoded
 
 
+# Calculate size
+def calculate_sizes(directory, original):
+    encoded_size = os.stat(directory + 'encoded_result.bin').st_size
+    key_size = os.stat(directory + 'key.bin').st_size
+    original_size = os.stat(original).st_size
+    return encoded_size, key_size, original_size
+
+
 # Main function
 def main():
     directory = 'encoded/'
@@ -193,9 +201,30 @@ def main():
     code = create(ordered_dictionary)
     encoded = encode(code, content)
     save(code, encoded, directory)
-    print(code)
     encoded_content, enc_code = load(directory)
     decoded = decode(encoded_content, enc_code)
+
+    en_size, k_size, o_size = calculate_sizes(directory, file_name)
+    sum_size = k_size + en_size
+    print('Original file => ' + file_name)
+    print('Size          => ' + str(o_size) + ' [bytes]')
+
+    print('Encoded size:')
+    print('\tEncoded   => ' + str(en_size) + ' [bytes]')
+    print('\tKey       => ' + str(k_size) + ' [bytes]')
+    print('\tSUM       => ' + str(sum_size) + ' [bytes]')
+
+    print('Compare files')
+    if decoded == content:
+        print('\tEquality correct ✓')
+        print('\tCompression Ratio => ' + str(o_size / sum_size))
+        print('\tSpace savings     => ' + str(1 - sum_size / o_size))
+    else:
+        print('\tContent =/= Decoded(Encoded(Content))')
+
+        print(content)
+        print('\n\n--------\n\n')
+        print(decoded)
 
 
 if __name__ == '__main__':
