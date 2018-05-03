@@ -168,6 +168,20 @@ def load(directory):
     return encoded_content, code
 
 
+# Decode already encoded text
+def decode(encoded_bits, code_dict):
+    decoded = ''
+    current_code = ''
+
+    for bit in encoded_bits.to01():
+        current_code += str(bit)
+        if current_code in code_dict:
+            decoded += code_dict.get(current_code)
+            current_code = ''
+
+    return decoded
+
+
 # Main function
 def main():
     directory = 'encoded/'
@@ -179,7 +193,9 @@ def main():
     code = create(ordered_dictionary)
     encoded = encode(code, content)
     save(code, encoded, directory)
-    load(directory)
+    print(code)
+    encoded_content, enc_code = load(directory)
+    decoded = decode(encoded_content, enc_code)
 
 
 if __name__ == '__main__':
