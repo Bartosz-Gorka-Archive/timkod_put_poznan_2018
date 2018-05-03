@@ -1,3 +1,6 @@
+import operator
+
+
 # Read file - return content
 def read_file(file_name):
     file = open(file_name, 'r')
@@ -17,13 +20,18 @@ def analyze_content(content):
     return letters, counter
 
 
+# Order letters dictionary - top used as first
+def order_dictionary(dictionary):
+    return sorted(dictionary.items(), key=operator.itemgetter(1), reverse=True)
+
+
 # Main function
 def main():
     file_name = '../Exercise_3/short_sample.txt'
 
     content = read_file(file_name)
     letters_dictionary, counter = analyze_content(content)
-    print(letters_dictionary.values())
+    ordered_dictionary = order_dictionary(letters_dictionary)
 
 
 if __name__ == '__main__':
