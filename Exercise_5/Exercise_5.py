@@ -1,5 +1,6 @@
 import heapq
 import operator
+from bitarray import bitarray
 
 
 class Node:
@@ -100,6 +101,15 @@ def create(dictionary):
     return codes
 
 
+# Encode text
+def encode(code_dict, text):
+    code = []
+    for letter in text:
+        code.append(code_dict.get(letter))
+
+    return bitarray(''.join(code))
+
+
 # Main function
 def main():
     file_name = '../Exercise_3/short_sample.txt'
@@ -108,6 +118,7 @@ def main():
     letters_dictionary, counter = analyze_content(content)
     ordered_dictionary = order_dictionary(letters_dictionary)
     code = create(ordered_dictionary)
+    encoded = encode(code, content)
 
 
 if __name__ == '__main__':
