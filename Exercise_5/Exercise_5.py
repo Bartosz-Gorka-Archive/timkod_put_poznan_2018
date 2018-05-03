@@ -136,6 +136,38 @@ def save(code_dict, encoded_content, directory):
         key_file.write(bitarray(''.join(code_bits)).tobytes())
 
 
+# Load content from file
+def load(directory):
+    encoded_content = bitarray()
+    encoded_key = bitarray()
+    code = {}
+
+    with open(directory + 'encoded_result.bin', 'rb') as content_file:
+        encoded_content.fromfile(content_file)
+
+    with open(directory + 'key.bin', 'rb') as key_file:
+        encoded_key.fromfile(key_file)
+
+    total_length = encoded_key.length()
+    length = 0
+    while length < total_length:
+        key = encoded_key[length: length + 8].tostring()
+        length += 8
+        size = []
+        temp = '0'
+        while temp != ':' and temp != '':
+            size.append(temp)
+            temp = encoded_key[length: length + 8].tostring()
+            length += 8
+
+        code_length = int(''.join(size))
+        code_bits = encoded_key[length: length + code_length].to01()
+        length += code_length
+        code[code_bits] = key
+
+    return encoded_content, code
+
+
 # Main function
 def main():
     directory = 'encoded/'
@@ -147,6 +179,7 @@ def main():
     code = create(ordered_dictionary)
     encoded = encode(code, content)
     save(code, encoded, directory)
+    load(directory)
 
 
 if __name__ == '__main__':
