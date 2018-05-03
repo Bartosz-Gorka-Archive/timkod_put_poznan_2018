@@ -1,3 +1,4 @@
+import os
 import heapq
 import operator
 from bitarray import bitarray
@@ -110,8 +111,34 @@ def encode(code_dict, text):
     return bitarray(''.join(code))
 
 
+# Simple cast char to bits
+def string2bits(s):
+    return [bin(ord(x))[2:].zfill(8) for x in s]
+
+
+# Save encoded details to file
+def save(code_dict, encoded_content, directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    with open(directory + 'encoded_result.bin', 'wb') as content_file:
+        encoded_content.tofile(content_file)
+    with open(directory + 'key.bin', 'wb') as key_file:
+        code_bits = []
+        for (key, value) in code_dict.items():
+            for x in string2bits(key):
+                code_bits.append(x)
+            for x in string2bits(str(len(value))):
+                code_bits.append(x)
+            for x in string2bits(':'):
+                code_bits.append(x)
+            code_bits.append(value)
+        key_file.write(bitarray(''.join(code_bits)).tobytes())
+
+
 # Main function
 def main():
+    directory = 'encoded/'
     file_name = '../Exercise_3/short_sample.txt'
 
     content = read_file(file_name)
@@ -119,6 +146,7 @@ def main():
     ordered_dictionary = order_dictionary(letters_dictionary)
     code = create(ordered_dictionary)
     encoded = encode(code, content)
+    save(code, encoded, directory)
 
 
 if __name__ == '__main__':
