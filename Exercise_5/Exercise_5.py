@@ -1,7 +1,11 @@
 import os
+import math
 import heapq
 import operator
 from bitarray import bitarray
+
+
+END_CONTENT_CHAR = '$'
 
 
 class Node:
@@ -76,8 +80,6 @@ def code_helper(root, current_code, codes):
 
     # Required assign character to node (only leaf has)
     if root.char:
-        if int(current_code) == 0:
-            current_code += '1'
         codes[root.char] = current_code
         return
 
@@ -110,6 +112,8 @@ def encode(code_dict, text):
     for letter in text:
         code.append(code_dict.get(letter))
 
+    # Append end of stream
+    code.append(code_dict.get(END_CONTENT_CHAR))
     return bitarray(''.join(code))
 
 
@@ -178,8 +182,12 @@ def decode(encoded_bits, code_dict):
     for bit in encoded_bits.to01():
         current_code += str(bit)
         if current_code in code_dict:
-            decoded += code_dict.get(current_code)
-            current_code = ''
+            char = code_dict.get(current_code)
+            if char != END_CONTENT_CHAR:
+                decoded += char
+                current_code = ''
+            else:
+                return decoded
 
     return decoded
 
@@ -192,6 +200,24 @@ def calculate_sizes(directory, original):
     return encoded_size, key_size, original_size
 
 
+def entropy(dictionary):
+    # Entropy sum
+    entropy_result = 0.0
+
+    # Loop to analyze
+    for key, value in dictionary.items():
+        entropy_result += value * math.log(value, 2)
+
+    # Return result
+    return -entropy_result
+
+
+def to_probability(dictionary, counter):
+    for letter in dictionary:
+        dictionary.update({letter: dictionary.get(letter) / counter})
+    return dictionary
+
+
 # Main function
 def main():
     directory = 'encoded/'
@@ -199,6 +225,8 @@ def main():
 
     content = read_file(file_name)
     letters_dictionary, counter = analyze_content(content)
+    counter += 1
+    letters_dictionary.update({END_CONTENT_CHAR: 1})
     ordered_dictionary = order_dictionary(letters_dictionary)
     code = create(ordered_dictionary)
     encoded = encode(code, content)
@@ -208,6 +236,9 @@ def main():
 
     en_size, k_size, o_size = calculate_sizes(directory, file_name)
     sum_size = k_size + en_size
+    sd = encoded.length() / len(content)
+    ce = entropy(to_probability(letters_dictionary, counter)) / sd
+
     print('Original file => ' + file_name)
     print('Size          => ' + str(o_size) + ' [bytes]')
 
@@ -215,6 +246,8 @@ def main():
     print('\tEncoded   => ' + str(en_size) + ' [bytes]')
     print('\tKey       => ' + str(k_size) + ' [bytes]')
     print('\tSUM       => ' + str(sum_size) + ' [bytes]')
+    print('\tSD        => ' + str(sd))
+    print('\tCE        => ' + str(ce))
 
     print('Compare files')
     if decoded == content:
