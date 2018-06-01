@@ -1,3 +1,4 @@
+import os
 import cv2
 import operator
 from bitarray import bitarray
@@ -155,32 +156,35 @@ def write_dictionary(dictionary, file_name):
             file.write(key)
 
 
+def calculate_size(file_name):
+    return os.stat(file_name).st_size
+
+
 def main():
-    file_name = '../Exercise_3/short_sample.txt'
-    # file_name = 'wiki_sample.txt'
+    # file_name = '../Exercise_3/short_sample.txt'
+    file_name = 'norm_wiki_sample.txt'
+    # content = read_binary_file('lena.bmp')
 
     ################################
     ####### Lempel–Ziv–Welch #######
     ################################
     content = read_file(file_name)
-    # content = read_binary_file('lena.bmp')
     characters_dictionary = analyze_content(content)
     sorted_characters_dictionary = sort_dictionary_items(characters_dictionary)
     basic_lzw = BasicLZW(content, sorted_characters_dictionary)
     lzw_basic_code = basic_lzw.create()
-    # print(lzw_basic_code)
     bits_codes = basic_lzw.codes_to_bits(lzw_basic_code)
     write_dictionary(lzw_basic_code, 'lzw_dictionary.txt')
 
     encoded_content = basic_lzw.encode(bits_codes)
     write_list(encoded_content, 'lzw_content.bin')
-    # # print(len(test))
-    # print(bits_codes)
     encoded = load_content('lzw_content.bin')
     decode_codes = load_dictionary('lzw_dictionary.txt')
     decoded = basic_lzw.decode(decode_codes, encoded)
-    # print(content)
-    print(decoded)
+
+    print('LZW basic format')
+    print('\tBefore =>', calculate_size(file_name), '[bytes]')
+    print('\tAfter  =>', calculate_size('lzw_content.bin'), '[bytes]')
 
 
 if __name__ == '__main__':
