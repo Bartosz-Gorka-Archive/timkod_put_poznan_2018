@@ -78,6 +78,17 @@ class BasicLZW:
         return code
 
 
+def write_list(encoded_content_list, file_name):
+    with open(file_name, 'wb') as file:
+        bitarray.tofile(bitarray(''.join(encoded_content_list)), file)
+
+
+def write_dictionary(dictionary, file_name):
+    with open(file_name, 'w') as file:
+        for key in dictionary.keys():
+            file.write(key)
+
+
 def main():
     file_name = '../Exercise_3/short_sample.txt'
     # file_name = 'wiki_sample.txt'
@@ -102,9 +113,10 @@ def main():
     # print(lzw_basic_code)
     bits_codes = basic_lzw.codes_to_bits(lzw_basic_code)
     print(bits_codes)
+    write_dictionary(lzw_basic_code, 'lzw_dictionary.txt')
 
     encoded_content = basic_lzw.encode(bits_codes)
-    # write(encoded_content)
+    write_list(encoded_content, 'lzw_content.bin')
     # print(len(test))
     print(bits_codes)
     print(encoded_content)
