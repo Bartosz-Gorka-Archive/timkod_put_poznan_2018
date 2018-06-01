@@ -88,6 +88,13 @@ def load_dictionary(file_name):
     return dictionary
 
 
+def load_content(file_name):
+    content = bitarray()
+    with open(file_name, 'rb') as file:
+        content.fromfile(file)
+    return content
+
+
 def write_list(encoded_content_list, file_name):
     with open(file_name, 'wb') as file:
         bitarray.tofile(bitarray(''.join(encoded_content_list)), file)
@@ -133,9 +140,10 @@ def main():
     # print(len(content))
     # print(len(encoded_content))
 
-    lzw = BasicLZW('', {})
-    d = load_dictionary('lzw_dictionary.txt')
-    print(lzw.codes_to_bits(d))
+    # lzw = BasicLZW('', {})
+    # d = load_dictionary('lzw_dictionary.txt')
+    # print(lzw.codes_to_bits(d))
+    print(load_content('lzw_content.bin'))
 
 
 if __name__ == '__main__':
