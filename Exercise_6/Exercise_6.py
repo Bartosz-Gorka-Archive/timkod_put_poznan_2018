@@ -52,7 +52,7 @@ class BasicLZW:
         fill = total_items.bit_length()
         for (char, code) in codes.items():
             bits = int2bits(code, fill=fill)
-            dict_with_bits_codes.update({char: bitarray(bits).to01()})
+            dict_with_bits_codes.update({char: bits})
 
         return dict_with_bits_codes
 
@@ -75,23 +75,64 @@ class BasicLZW:
                 if last_element_num.bit_length() > current_bit_length:
                     current_bit_length += 1
                     for key, value in codes.items():
-                        codes.update({key: bitarray('0' + value).to01()})
+                        codes.update({key: '0' + value})
 
                 # Update dictionary
-                codes.update({current_key: bitarray(int2bits(last_element_num, fill=current_bit_length)).to01()})
+                codes.update({current_key: str(int2bits(last_element_num, fill=current_bit_length))})
                 basic_key = letter
                 current_key = letter
 
         code.append(codes.get(basic_key))
         return code
 
+    @staticmethod
+    def decode(codes, encoded_content):
+        content = []
+        last_key = ''
+        index = 0
+        last_element_num = len(codes)
+        current_bit_length = last_element_num.bit_length()
+        max_index = len(encoded_content)
+
+        while True:
+            bits_code = encoded_content[index:index + current_bit_length].to01()
+            index += current_bit_length
+            char = codes.get(bits_code)
+
+            if char is not None:
+                last_element_num += 1
+                codes.update({int2bits(last_element_num, fill=current_bit_length): char})
+
+                if last_key != '':
+                    last_key += char[0]
+                    codes.update({int2bits((last_element_num - 1), fill=current_bit_length): last_key})
+
+                    if last_element_num.bit_length() > current_bit_length:
+                        current_bit_length += 1
+                        temp = {}
+                        for key, value in codes.items():
+                            temp.update({'0' + key: value})
+                        codes = temp
+
+                last_key = char
+                content.append(char)
+
+                if index >= max_index:
+                    break
+            else:
+                break
+
+        return ''.join(content)
+
 
 def load_dictionary(file_name):
     dictionary = {}
     with open(file_name, 'r') as file:
         content = file.read()
+        fill = len(content).bit_length()
         for index, char in enumerate(content):
-            dictionary.update({char: index + 1})
+            bits = int2bits(index + 1, fill=fill)
+            dictionary.update({bits: char})
 
     return dictionary
 
@@ -121,28 +162,25 @@ def main():
     ################################
     ####### Lempel–Ziv–Welch #######
     ################################
-    # content = read_file(file_name)
-    content = read_binary_file('lena.bmp')
+    content = read_file(file_name)
+    # content = read_binary_file('lena.bmp')
     characters_dictionary = analyze_content(content)
     sorted_characters_dictionary = sort_dictionary_items(characters_dictionary)
     basic_lzw = BasicLZW(content, sorted_characters_dictionary)
     lzw_basic_code = basic_lzw.create()
     # print(lzw_basic_code)
     bits_codes = basic_lzw.codes_to_bits(lzw_basic_code)
-    # write_dictionary(lzw_basic_code, 'lzw_dictionary.txt')
+    write_dictionary(lzw_basic_code, 'lzw_dictionary.txt')
 
     encoded_content = basic_lzw.encode(bits_codes)
-    # write_list(encoded_content, 'lzw_content.bin')
+    write_list(encoded_content, 'lzw_content.bin')
     # # print(len(test))
     # print(bits_codes)
-    # print(encoded_content)
-    print(len(content))
-    print(len(encoded_content))
-
-    # lzw = BasicLZW('', {})
-    # d = load_dictionary('lzw_dictionary.txt')
-    # print(lzw.codes_to_bits(d))
-    # print(load_content('lzw_content.bin'))
+    encoded = load_content('lzw_content.bin')
+    decode_codes = load_dictionary('lzw_dictionary.txt')
+    decoded = basic_lzw.decode(decode_codes, encoded)
+    # print(content)
+    print(decoded)
 
 
 if __name__ == '__main__':
