@@ -78,6 +78,16 @@ class BasicLZW:
         return code
 
 
+def load_dictionary(file_name):
+    dictionary = {}
+    with open(file_name, 'r') as file:
+        content = file.read()
+        for index, char in enumerate(content):
+            dictionary.update({char: index + 1})
+
+    return dictionary
+
+
 def write_list(encoded_content_list, file_name):
     with open(file_name, 'wb') as file:
         bitarray.tofile(bitarray(''.join(encoded_content_list)), file)
@@ -103,25 +113,29 @@ def main():
     # for i in test[0:100]:
     #     test_content += chr(i)
 
-    content = read_file(file_name)
-    content = content[0:100]
-    # content = test_content
-    characters_dictionary = analyze_content(content)
-    sorted_characters_dictionary = sort_dictionary_items(characters_dictionary)
-    basic_lzw = BasicLZW(content, sorted_characters_dictionary)
-    lzw_basic_code = basic_lzw.create()
-    # print(lzw_basic_code)
-    bits_codes = basic_lzw.codes_to_bits(lzw_basic_code)
-    print(bits_codes)
-    write_dictionary(lzw_basic_code, 'lzw_dictionary.txt')
+    # content = read_file(file_name)
+    # content = content[0:100]
+    # # content = test_content
+    # characters_dictionary = analyze_content(content)
+    # sorted_characters_dictionary = sort_dictionary_items(characters_dictionary)
+    # basic_lzw = BasicLZW(content, sorted_characters_dictionary)
+    # lzw_basic_code = basic_lzw.create()
+    # # print(lzw_basic_code)
+    # bits_codes = basic_lzw.codes_to_bits(lzw_basic_code)
+    # print(bits_codes)
+    # write_dictionary(lzw_basic_code, 'lzw_dictionary.txt')
+    #
+    # encoded_content = basic_lzw.encode(bits_codes)
+    # write_list(encoded_content, 'lzw_content.bin')
+    # # print(len(test))
+    # print(bits_codes)
+    # print(encoded_content)
+    # print(len(content))
+    # print(len(encoded_content))
 
-    encoded_content = basic_lzw.encode(bits_codes)
-    write_list(encoded_content, 'lzw_content.bin')
-    # print(len(test))
-    print(bits_codes)
-    print(encoded_content)
-    print(len(content))
-    print(len(encoded_content))
+    lzw = BasicLZW('', {})
+    d = load_dictionary('lzw_dictionary.txt')
+    print(lzw.codes_to_bits(d))
 
 
 if __name__ == '__main__':
