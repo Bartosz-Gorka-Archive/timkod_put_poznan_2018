@@ -8,6 +8,14 @@ def read_file(file_name):
     return file.read()
 
 
+def read_binary_file(file_name):
+    content = ''
+    with open(file_name, 'rb') as file:
+        temp = list(file.read())
+        content = ''.join([chr(x) for x in temp])
+    return content
+
+
 def analyze_content(content):
     dictionary = {}
     for char in content:
@@ -113,37 +121,28 @@ def main():
     ################################
     ####### Lempel–Ziv–Welch #######
     ################################
-    # lena = 'lena.bmp'
-    # file = open(lena, 'rb')
-    # test = list(file.read())
-    # test_content = ''
-    # for i in test[0:100]:
-    #     test_content += chr(i)
-
     # content = read_file(file_name)
-    # content = content[0:100]
-    # # content = test_content
-    # characters_dictionary = analyze_content(content)
-    # sorted_characters_dictionary = sort_dictionary_items(characters_dictionary)
-    # basic_lzw = BasicLZW(content, sorted_characters_dictionary)
-    # lzw_basic_code = basic_lzw.create()
-    # # print(lzw_basic_code)
-    # bits_codes = basic_lzw.codes_to_bits(lzw_basic_code)
-    # print(bits_codes)
+    content = read_binary_file('lena.bmp')
+    characters_dictionary = analyze_content(content)
+    sorted_characters_dictionary = sort_dictionary_items(characters_dictionary)
+    basic_lzw = BasicLZW(content, sorted_characters_dictionary)
+    lzw_basic_code = basic_lzw.create()
+    # print(lzw_basic_code)
+    bits_codes = basic_lzw.codes_to_bits(lzw_basic_code)
     # write_dictionary(lzw_basic_code, 'lzw_dictionary.txt')
-    #
-    # encoded_content = basic_lzw.encode(bits_codes)
+
+    encoded_content = basic_lzw.encode(bits_codes)
     # write_list(encoded_content, 'lzw_content.bin')
     # # print(len(test))
     # print(bits_codes)
     # print(encoded_content)
-    # print(len(content))
-    # print(len(encoded_content))
+    print(len(content))
+    print(len(encoded_content))
 
     # lzw = BasicLZW('', {})
     # d = load_dictionary('lzw_dictionary.txt')
     # print(lzw.codes_to_bits(d))
-    print(load_content('lzw_content.bin'))
+    # print(load_content('lzw_content.bin'))
 
 
 if __name__ == '__main__':
