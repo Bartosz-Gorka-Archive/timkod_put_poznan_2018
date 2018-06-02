@@ -1,5 +1,6 @@
 import os
 import cv2
+import heapq
 import operator
 from bitarray import bitarray
 
@@ -198,6 +199,90 @@ class LZWHuffman:
                 temp.update({key: [code, cardinality]})
         return temp
 
+    @staticmethod
+    def make_nodes_heap(dictionary):
+        heap = []
+        for key, value in dictionary.items():
+            [_bits, cardinality] = value
+            node = Node(key, cardinality)
+            heapq.heappush(heap, node)
+        return heap
+
+    @staticmethod
+    def merge_nodes(heap):
+        while len(heap) > 1:
+            node1 = heapq.heappop(heap)
+            node2 = heapq.heappop(heap)
+
+            merged = Node(None, node1.freq + node2.freq)
+            merged.left = node1
+            merged.right = node2
+
+            heapq.heappush(heap, merged)
+        return heap
+
+    def code_helper(self, root, current_code, codes):
+        # Return when None
+        if not root:
+            return
+
+        # Required assign character to node (only leaf has)
+        if root.char:
+            codes[root.char] = current_code
+            return
+
+        # Recursion
+        self.code_helper(root.left, current_code + '0', codes)
+        self.code_helper(root.right, current_code + '1', codes)
+
+    def make_codes(self, heap):
+        current_code = ''
+        codes = {}
+        root = heapq.heappop(heap)
+
+        self.code_helper(root, current_code, codes)
+        return codes
+
+    def huffman_codes(self, dictionary):
+        nodes = self.make_nodes_heap(dictionary)
+        heap = self.merge_nodes(nodes)
+        codes = self.make_codes(heap)
+        return codes
+
+    def encode(self, dictionary):
+        code = []
+        current_key = ''
+        basic_key = ''
+
+        for letter in self.content:
+            current_key += letter
+            if current_key in dictionary:
+                basic_key += letter
+            else:
+                code.append(dictionary.get(basic_key))
+                basic_key = letter
+                current_key = letter
+
+        code.append(dictionary.get(basic_key))
+        return code
+
+
+class Node:
+    def __init__(self, char, card):
+        self.char = char
+        self.freq = card
+        self.left = None
+        self.right = None
+
+    def __eq__(self, other):
+        return self.freq == other.freq
+
+    def __lt__(self, other):
+        return self.freq < other.freq
+
+    def __gt__(self, other):
+        return self.freq > other.freq
+
 
 def load_dictionary(file_name):
     dictionary = {}
@@ -270,9 +355,10 @@ def main():
     bits_codes = lzw_huffman.codes_to_bits(lzw_basic_code)
     codes_with_counters = lzw_huffman.append_counters(bits_codes)
     codes_with_cardinality, total_counter = lzw_huffman.pre_encode(codes_with_counters)
-    print(len(codes_with_cardinality))
     codes_clear_cardinality = lzw_huffman.remove_zero_cardinality_items(codes_with_cardinality)
-    print(len(codes_clear_cardinality))
+    huffman_codes = lzw_huffman.huffman_codes(codes_clear_cardinality)
+    encoded = lzw_huffman.encode(huffman_codes)
+    print(encoded)
 
 
 if __name__ == '__main__':
