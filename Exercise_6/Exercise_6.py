@@ -268,7 +268,18 @@ class LZWHuffman:
 
     @staticmethod
     def decode(dictionary, content):
-        pass
+        END_CONTENT_CHAR = '^'
+        decoded = ''
+        current_code = ''
+
+        for bit in content.to01():
+            current_code += str(bit)
+            if current_code in dictionary:
+                char = dictionary.get(current_code)
+                decoded += char
+                current_code = ''
+
+        return decoded
 
 
 class Node:
@@ -307,7 +318,7 @@ def load_huffman_dictionary(file_name):
         slited = content.split('^')
         for index, val in enumerate(slited):
             if index % 2 == 1:
-                dictionary.update({slited[index - 1]: val})
+                dictionary.update({val: slited[index - 1]})
 
     return dictionary
 
@@ -386,7 +397,8 @@ def main():
     write_list(encoded, 'lzw_huffman_content.bin')
     write_huffman_dictionary(huffman_codes, 'lzw_huffman_keys.txt')
     loaded_dictionary = load_huffman_dictionary('lzw_huffman_keys.txt')
-    print(loaded_dictionary)
+    loaded_content = load_content('lzw_huffman_content.bin')
+    decoded = lzw_huffman.decode(loaded_dictionary, loaded_content)
 
 
 if __name__ == '__main__':
