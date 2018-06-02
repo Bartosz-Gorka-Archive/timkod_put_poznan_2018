@@ -191,11 +191,11 @@ class LZWHuffman:
         return codes, counter
 
     @staticmethod
-    def remove_zero_cardinality_items(codes):
+    def remove_n_cardinality_items(codes, n=0):
         temp = {}
         for key, item in codes.items():
             [code, cardinality] = item
-            if cardinality > 0:
+            if cardinality > n:
                 temp.update({key: [code, cardinality]})
         return temp
 
@@ -355,30 +355,30 @@ def calculate_size(file_name):
 
 
 def main():
-    file_name = '../Exercise_3/short_sample.txt'
-    # file_name = 'norm_wiki_sample.txt'
+    # file_name = '../Exercise_3/short_sample.txt'
+    file_name = 'norm_wiki_sample.txt'
     # content = read_binary_file('lena.bmp')
 
     ################################
     ####### Lempel–Ziv–Welch #######
     ################################
-    # content = read_file(file_name)
-    # characters_dictionary = analyze_content(content)
-    # sorted_characters_dictionary = sort_dictionary_items(characters_dictionary)
-    # basic_lzw = BasicLZW(content, sorted_characters_dictionary)
-    # lzw_basic_code = basic_lzw.create()
-    # bits_codes = basic_lzw.codes_to_bits(lzw_basic_code)
-    # write_dictionary(lzw_basic_code, 'lzw_dictionary.txt')
-    #
-    # encoded_content = basic_lzw.encode(bits_codes)
-    # write_list(encoded_content, 'lzw_content.bin')
-    # encoded = load_content('lzw_content.bin')
-    # decode_codes = load_dictionary('lzw_dictionary.txt')
-    # decoded = basic_lzw.decode(decode_codes, encoded)
-    #
-    # print('LZW basic format')
-    # print('\tBefore =>', calculate_size(file_name), '[bytes]')
-    # print('\tAfter  =>', calculate_size('lzw_content.bin'), '[bytes]')
+    content = read_file(file_name)
+    characters_dictionary = analyze_content(content)
+    sorted_characters_dictionary = sort_dictionary_items(characters_dictionary)
+    basic_lzw = BasicLZW(content, sorted_characters_dictionary)
+    lzw_basic_code = basic_lzw.create()
+    bits_codes = basic_lzw.codes_to_bits(lzw_basic_code)
+    write_dictionary(lzw_basic_code, 'lzw_dictionary.txt')
+
+    encoded_content = basic_lzw.encode(bits_codes)
+    write_list(encoded_content, 'lzw_content.bin')
+    encoded = load_content('lzw_content.bin')
+    decode_codes = load_dictionary('lzw_dictionary.txt')
+    decoded = basic_lzw.decode(decode_codes, encoded)
+
+    print('LZW basic format')
+    print('\tBefore =>', calculate_size(file_name), '[bytes]')
+    print('\tAfter  =>', calculate_size('lzw_content.bin'), '[bytes]')
 
     #############################
     ####### LZW + Huffman #######
@@ -391,7 +391,7 @@ def main():
     bits_codes = lzw_huffman.codes_to_bits(lzw_basic_code)
     codes_with_counters = lzw_huffman.append_counters(bits_codes)
     codes_with_cardinality, total_counter = lzw_huffman.pre_encode(codes_with_counters)
-    codes_clear_cardinality = lzw_huffman.remove_zero_cardinality_items(codes_with_cardinality)
+    codes_clear_cardinality = lzw_huffman.remove_n_cardinality_items(codes_with_cardinality, n=5)
     huffman_codes = lzw_huffman.huffman_codes(codes_clear_cardinality)
     encoded = lzw_huffman.encode(huffman_codes)
     write_list(encoded, 'lzw_huffman_content.bin')
@@ -399,6 +399,11 @@ def main():
     loaded_dictionary = load_huffman_dictionary('lzw_huffman_keys.txt')
     loaded_content = load_content('lzw_huffman_content.bin')
     decoded = lzw_huffman.decode(loaded_dictionary, loaded_content)
+
+    print('LZW + Huffman format')
+    print('\tBefore =>', calculate_size(file_name), '[bytes]')
+    print('\tAfter  =>', calculate_size('lzw_huffman_content.bin'), '[bytes]')
+    print('\tKeys   =>', calculate_size('lzw_huffman_keys.txt'), '[bytes]')
 
 
 if __name__ == '__main__':
