@@ -126,6 +126,79 @@ class BasicLZW:
         return ''.join(content)
 
 
+class LZWHuffman:
+    def __init__(self, content, characters):
+        self.content = content
+        self.characters_dictionary = characters
+
+    def create(self):
+        dictionary_with_codes = {}
+        for index, key in enumerate(self.characters_dictionary.keys()):
+            dictionary_with_codes.update({key: index + 1})
+
+        return dictionary_with_codes
+
+    @staticmethod
+    def append_counters(codes):
+        for key, value in codes.items():
+            codes.update({key: [value, 0]})
+        return codes
+
+    @staticmethod
+    def codes_to_bits(codes):
+        dict_with_bits_codes = {}
+        total_items = len(codes)
+        fill = total_items.bit_length()
+        for (char, code) in codes.items():
+            bits = int2bits(code, fill=fill)
+            dict_with_bits_codes.update({char: bits})
+
+        return dict_with_bits_codes
+
+    def pre_encode(self, codes):
+        current_key = ''
+        basic_key = ''
+        counter = 0
+        last_element_num = len(codes)
+        current_bit_length = last_element_num.bit_length()
+
+        for letter in self.content:
+            current_key += letter
+            if current_key in codes:
+                basic_key += letter
+            else:
+                [ind, card] = codes.get(basic_key)
+                codes.update({basic_key: [ind, card + 1]})
+                last_element_num += 1
+                counter += 1
+
+                # Bump bits array - max length used
+                if last_element_num.bit_length() > current_bit_length:
+                    current_bit_length += 1
+                    for key, value in codes.items():
+                        [ind, card] = value
+                        codes.update({key: ['0' + ind, card]})
+
+                # Update dictionary
+                codes.update({current_key: [str(int2bits(last_element_num, fill=current_bit_length)), 0]})
+                basic_key = letter
+                current_key = letter
+
+        [ind, card] = codes.get(basic_key)
+        codes.update({basic_key: [ind, card+1]})
+        counter += 1
+        return codes, counter
+
+    @staticmethod
+    def remove_zero_cardinality_items(codes):
+        temp = {}
+        for key, item in codes.items():
+            [code, cardinality] = item
+            if cardinality > 0:
+                temp.update({key: [code, cardinality]})
+        return temp
+
+
 def load_dictionary(file_name):
     dictionary = {}
     with open(file_name, 'r') as file:
@@ -161,30 +234,45 @@ def calculate_size(file_name):
 
 
 def main():
-    # file_name = '../Exercise_3/short_sample.txt'
-    file_name = 'norm_wiki_sample.txt'
+    file_name = '../Exercise_3/short_sample.txt'
+    # file_name = 'norm_wiki_sample.txt'
     # content = read_binary_file('lena.bmp')
 
     ################################
     ####### Lempel–Ziv–Welch #######
     ################################
+    # content = read_file(file_name)
+    # characters_dictionary = analyze_content(content)
+    # sorted_characters_dictionary = sort_dictionary_items(characters_dictionary)
+    # basic_lzw = BasicLZW(content, sorted_characters_dictionary)
+    # lzw_basic_code = basic_lzw.create()
+    # bits_codes = basic_lzw.codes_to_bits(lzw_basic_code)
+    # write_dictionary(lzw_basic_code, 'lzw_dictionary.txt')
+    #
+    # encoded_content = basic_lzw.encode(bits_codes)
+    # write_list(encoded_content, 'lzw_content.bin')
+    # encoded = load_content('lzw_content.bin')
+    # decode_codes = load_dictionary('lzw_dictionary.txt')
+    # decoded = basic_lzw.decode(decode_codes, encoded)
+    #
+    # print('LZW basic format')
+    # print('\tBefore =>', calculate_size(file_name), '[bytes]')
+    # print('\tAfter  =>', calculate_size('lzw_content.bin'), '[bytes]')
+
+    #############################
+    ####### LZW + Huffman #######
+    #############################
     content = read_file(file_name)
     characters_dictionary = analyze_content(content)
     sorted_characters_dictionary = sort_dictionary_items(characters_dictionary)
-    basic_lzw = BasicLZW(content, sorted_characters_dictionary)
-    lzw_basic_code = basic_lzw.create()
-    bits_codes = basic_lzw.codes_to_bits(lzw_basic_code)
-    write_dictionary(lzw_basic_code, 'lzw_dictionary.txt')
-
-    encoded_content = basic_lzw.encode(bits_codes)
-    write_list(encoded_content, 'lzw_content.bin')
-    encoded = load_content('lzw_content.bin')
-    decode_codes = load_dictionary('lzw_dictionary.txt')
-    decoded = basic_lzw.decode(decode_codes, encoded)
-
-    print('LZW basic format')
-    print('\tBefore =>', calculate_size(file_name), '[bytes]')
-    print('\tAfter  =>', calculate_size('lzw_content.bin'), '[bytes]')
+    lzw_huffman = LZWHuffman(content, sorted_characters_dictionary)
+    lzw_basic_code = lzw_huffman.create()
+    bits_codes = lzw_huffman.codes_to_bits(lzw_basic_code)
+    codes_with_counters = lzw_huffman.append_counters(bits_codes)
+    codes_with_cardinality, total_counter = lzw_huffman.pre_encode(codes_with_counters)
+    print(len(codes_with_cardinality))
+    codes_clear_cardinality = lzw_huffman.remove_zero_cardinality_items(codes_with_cardinality)
+    print(len(codes_clear_cardinality))
 
 
 if __name__ == '__main__':
