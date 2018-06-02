@@ -308,10 +308,11 @@ def write_list(encoded_content_list, file_name):
         bitarray.tofile(bitarray(''.join(encoded_content_list)), file)
 
 
-def write_dictionary(dictionary, file_name):
+def write_dictionary(dictionary, file_name, separator=''):
     with open(file_name, 'w') as file:
         for key in dictionary.keys():
             file.write(key)
+            file.write(separator)
 
 
 def calculate_size(file_name):
@@ -358,7 +359,8 @@ def main():
     codes_clear_cardinality = lzw_huffman.remove_zero_cardinality_items(codes_with_cardinality)
     huffman_codes = lzw_huffman.huffman_codes(codes_clear_cardinality)
     encoded = lzw_huffman.encode(huffman_codes)
-    print(encoded)
+    write_list(encoded, 'lzw_huffman_content.bin')
+    write_dictionary(huffman_codes, 'lzw_huffman_keys.txt', separator='^')
 
 
 if __name__ == '__main__':
