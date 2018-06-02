@@ -266,6 +266,10 @@ class LZWHuffman:
         code.append(dictionary.get(basic_key))
         return code
 
+    @staticmethod
+    def decode(dictionary, content):
+        pass
+
 
 class Node:
     def __init__(self, char, card):
@@ -296,6 +300,18 @@ def load_dictionary(file_name):
     return dictionary
 
 
+def load_huffman_dictionary(file_name):
+    dictionary = {}
+    with open(file_name, 'r') as file:
+        content = file.read()
+        slited = content.split('^')
+        for index, val in enumerate(slited):
+            if index % 2 == 1:
+                dictionary.update({slited[index - 1]: val})
+
+    return dictionary
+
+
 def load_content(file_name):
     content = bitarray()
     with open(file_name, 'rb') as file:
@@ -308,11 +324,19 @@ def write_list(encoded_content_list, file_name):
         bitarray.tofile(bitarray(''.join(encoded_content_list)), file)
 
 
-def write_dictionary(dictionary, file_name, separator=''):
+def write_dictionary(dictionary, file_name):
     with open(file_name, 'w') as file:
         for key in dictionary.keys():
             file.write(key)
-            file.write(separator)
+
+
+def write_huffman_dictionary(dictionary, file_name):
+    with open(file_name, 'w') as file:
+        for key, value in dictionary.items():
+            file.write(key)
+            file.write('^')
+            file.write(value)
+            file.write('^')
 
 
 def calculate_size(file_name):
@@ -360,7 +384,9 @@ def main():
     huffman_codes = lzw_huffman.huffman_codes(codes_clear_cardinality)
     encoded = lzw_huffman.encode(huffman_codes)
     write_list(encoded, 'lzw_huffman_content.bin')
-    write_dictionary(huffman_codes, 'lzw_huffman_keys.txt', separator='^')
+    write_huffman_dictionary(huffman_codes, 'lzw_huffman_keys.txt')
+    loaded_dictionary = load_huffman_dictionary('lzw_huffman_keys.txt')
+    print(loaded_dictionary)
 
 
 if __name__ == '__main__':
